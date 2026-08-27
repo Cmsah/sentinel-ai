@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: sentinel-ai
+  group_by: ['alertname', 'namespace']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    - receiver: sentinel-ai
+      match:
+        severity: critical
+    - receiver: sentinel-ai
+      match:
+        severity: warning
+
+receivers:
+  - name: sentinel-ai
+    webhook_configs:
+      - url: 'http://sentinel:8000/api/v1/webhooks/alertmanager'
+        send_resolved: true

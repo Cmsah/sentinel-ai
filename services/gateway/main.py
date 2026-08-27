@@ -20,7 +20,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from services.gateway.routes import analysis, deployments, health, incidents
+from services.gateway.routes import analysis, deployments, health, incidents, webhooks
 from services.shared.config import get_settings
 from services.shared.database import init_db, close_db
 from services.shared.exceptions import SentinelError
@@ -134,6 +134,7 @@ def create_app() -> FastAPI:
     app.include_router(incidents.router, prefix="/api/v1", tags=["Incidents"])
     app.include_router(deployments.router, prefix="/api/v1", tags=["Deployments"])
     app.include_router(analysis.router, prefix="/api/v1", tags=["AI Analysis"])
+    app.include_router(webhooks.router, tags=["Webhooks"])
 
     return app
 
