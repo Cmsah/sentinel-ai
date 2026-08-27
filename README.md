@@ -1,6 +1,6 @@
 # 🛡️ Sentinel AI — Autonomous Cloud Operations Platform
 
-> An AI-powered Site Reliability Engineer that continuously monitors cloud infrastructure, investigates incidents, explains failures, and proposes fixes.
+> An AI-powered Site Reliability Engineer that analyzes cloud infrastructure failures, investigates incidents, explains root causes, and proposes automated remediation.
 
 **This is not a chatbot.** It's a distributed platform where AI is one component in a larger event-driven system.
 
@@ -10,12 +10,12 @@
 
 When a deployment fails at 2:30 AM, instead of paging someone:
 
-1. **Detects** the failure (CrashLoopBackOff, OOMKilled, 503s)
+1. **Receives** failure data (CrashLoopBackOff, OOMKilled, image pull errors) from Kubernetes or simulation
 2. **Collects** evidence from logs, Kubernetes, metrics, and deployment history
-3. **Analyzes** the data using 6 specialized AI agents running in parallel
+3. **Analyzes** the data using 6 specialized AI agents running in parallel via LangGraph
 4. **Identifies** the root cause with confidence scoring
 5. **Proposes** remediation actions ranked by risk level
-6. **Simulates** Jira ticket creation and GitHub pull requests (real integrations planned)
+6. **Simulates** Jira ticket creation and GitHub pull requests (simulation mode; real API integration configurable via env vars)
 7. **Orchestrates** safe recovery workflows (workflow engine planned)
 
 ## Architecture
@@ -55,13 +55,13 @@ When a deployment fails at 2:30 AM, instead of paging someone:
 Every action emits an event through Kafka:
 
 ```
-DeploymentCreated → Kafka → Deployment Service
+DeploymentCreated → Kafka → Incident Service (auto-creates incident)
        ↓
-PodFailed → Kafka → Incident Service
+IncidentCreated → API → AI Orchestrator (on-demand analysis)
        ↓
-AI Analysis Started → Kafka → Notification Service
+RootCauseIdentified → Remediation Agent → Action Plan
        ↓
-PR Generated → Kafka → Approval Requested → Deploy Fix
+RemediationProposed → Ranked Actions (manual or automated execution)
 ```
 
 ## Quick Start
@@ -70,7 +70,7 @@ PR Generated → Kafka → Approval Requested → Deploy Fix
 
 ```bash
 # Clone
-git clone https://github.com/your-org/sentinel-ai.git
+git clone https://github.com/Cmsah/sentinel-ai.git
 cd sentinel-ai
 
 # Install
