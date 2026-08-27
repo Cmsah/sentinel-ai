@@ -1,0 +1,103 @@
+# ============================================================
+# Sentinel AI — Namespace
+# ============================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sentinel
+  labels:
+    app.kubernetes.io/part-of: sentinel-ai
+---
+# ============================================================
+# Sentinel AI — Service
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: sentinel-ai
+  namespace: sentinel
+  labels:
+    app: sentinel-ai
+spec:
+  type: ClusterIP
+  selector:
+    app: sentinel-ai
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: mcp
+      port: 9000
+      targetPort: 9000
+      protocol: TCP
+---
+# ============================================================
+# Sentinel AI — Ingress (optional, requires ingress controller)
+# ============================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sentinel-ai
+  namespace: sentinel
+  labels:
+    app: sentinel-ai
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/websocket-services: "sentinel-ai"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: sentinel.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sentinel-ai
+                port:
+                  name: http
+---
+# ============================================================
+# Sentinel AI — ServiceAccount + RBAC
+# ============================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sentinel-ai
+  namespace: sentinel
+  labels:
+    app: sentinel-ai
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sentinel-ai-reader
+  labels:
+    app: sentinel-ai
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/log", "services", "configmaps", "secrets", "events", "namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sentinel-ai-reader
+  labels:
+    app: sentinel-ai
+subjects:
+  - kind: ServiceAccount
+    name: sentinel-ai
+    namespace: sentinel
+roleRef:
+  kind: ClusterRole
+  name: sentinel-ai-reader
+  apiGroup: rbac.authorization.k8s.io

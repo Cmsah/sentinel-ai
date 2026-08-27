@@ -1,0 +1,16 @@
+# Prometheus configuration for Sentinel AI
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Sentinel AI application metrics
+  - job_name: "sentinel-ai"
+    static_configs:
+      - targets: ["sentinel:8000"]
+    metrics_path: "/metrics"
+
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
